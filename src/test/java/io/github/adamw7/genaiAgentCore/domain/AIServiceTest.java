@@ -6,10 +6,19 @@ import com.aisupport.util.AIConnection;
 import dev.langchain4j.data.message.ChatMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.data.message.ImageContent;
+import dev.langchain4j.data.message.TextContent;
+import dev.langchain4j.data.message.AudioContent;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 
 public class AIServiceTest {
@@ -107,24 +116,42 @@ public class AIServiceTest {
 
     @Test
     public void scenario5() {
-        // Use of multi modal model
-        String question = "Can people colonize the Moon?";
-
-        AIService ollamaService = AIConnection.provideOllamaService("llava");
-        String ollamaResponse = ollamaService.chat(question);
-        System.out.println("Ollama response -> \n" + ollamaResponse);
-
-
+        // Use of multi modal model with image
+        try {
+            // Load image from resources
+            InputStream imageStream = getClass().getClassLoader().getResourceAsStream("pic1.jpg");
+            if (imageStream == null) {
+                System.err.println("Could not find pic1.jpg in resources. Make sure the file is in src/main/resources/");
+                return;
+            }
+            
+            // Convert image to base64
+            byte[] imageBytes = imageStream.readAllBytes();
+            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+            imageStream.close();
+            
+            // Create multimodal message with image and prompt
+            String prompt = "Please describe what you see in this image in detail.";
+            ImageContent imageContent = ImageContent.from(base64Image, "image/jpeg");
+            TextContent textContent = TextContent.from(prompt);
+            UserMessage userMessage = UserMessage.from(List.of(
+                textContent,
+                imageContent
+            ));
+            
+            // Send to Ollama LLaVA model
+            AIService ollamaService = AIConnection.provideOllamaService("llava");
+            ChatResponse ollamaResponse = ollamaService.chat(userMessage);
+            System.out.println("Ollama LLaVA response -> \n" + ollamaResponse.aiMessage().text());
+            
+        } catch (IOException e) {
+            System.err.println("Error loading or processing image: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
+
+
 
 }
 
-/*
-AIBasicConfig {
-    protected String engineType;
-    protected String apiKey;
-    protected String apiUrl;
-    protected String modelName;
-    protected int maxTokenLimit;
-    protected double temperature;
-}*/
