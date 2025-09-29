@@ -92,7 +92,6 @@ public class AIServiceTest {
         System.out.println("VLLM response -> " + vllmResponse.aiMessage().text());
 
 
-
         ChatRequest request = ChatRequest.builder()
                 .messages(List.of(systemMessage, userMessage))
                 .build();
@@ -105,9 +104,20 @@ public class AIServiceTest {
         System.out.println("VLLM response -> \n" + vllmResponse.aiMessage().text());
     }
 
+
+    @Test
+    public void scenario5() {
+        // Use of multi modal model
+        String question = "Can people colonize the Moon?";
+
+        AIService ollamaService = AIConnection.provideOllamaService("llava");
+        String ollamaResponse = ollamaService.chat(question);
+        System.out.println("Ollama response -> \n" + ollamaResponse);
+
+
+    }
+
 }
-
-
 
 /*
 AIBasicConfig {
