@@ -3,7 +3,14 @@ package io.github.adamw7.genaiAgentCore.domain;
 import com.aisupport.config.AIBasicConfig;
 import com.aisupport.service.AIService;
 import com.aisupport.util.AIConnection;
+import dev.langchain4j.data.message.ChatMessage;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.response.ChatResponse;
 import org.junit.Test;
+
+import java.util.List;
 
 public class AIServiceTest {
     private static final String OLLAMA_ENGINE_NAME = "ollama";
@@ -63,6 +70,39 @@ public class AIServiceTest {
         AIService vllmService = AIConnection.provideService(configVLLM);
         String vllmResponse = vllmService.chat(question);
         System.out.println("VLLM response -> \n" + vllmResponse);
+    }
+
+
+    @Test
+    public void scenario4() {
+        // Using different input for chat
+
+        AIService ollamaService = AIConnection.provideOllamaGemma2Service();
+        AIService vllmService = AIConnection.provideVllmBasicService();
+
+        SystemMessage systemMessage = new SystemMessage("You are a helpful assistant that translates English to French.");
+        UserMessage userMessage = new UserMessage("Translate the following English text to French: 'Hello, how are you?'");
+
+        List<ChatMessage> listOfMessages = List.of(systemMessage, userMessage);
+
+        ChatResponse ollamaResponse = ollamaService.chat(listOfMessages);
+        System.out.println("Ollama response -> " + ollamaResponse.aiMessage().text());
+
+        ChatResponse vllmResponse = vllmService.chat(listOfMessages);
+        System.out.println("VLLM response -> " + vllmResponse.aiMessage().text());
+
+
+
+        ChatRequest request = ChatRequest.builder()
+                .messages(List.of(systemMessage, userMessage))
+                .build();
+
+
+        ChatResponse ollamaResponseRequest = ollamaService.chat(request);
+        System.out.println("Ollama response -> \n" + ollamaResponseRequest.aiMessage().text());
+
+        ChatResponse vllmResponseRequest = vllmService.chat(request);
+        System.out.println("VLLM response -> \n" + vllmResponse.aiMessage().text());
     }
 
 }

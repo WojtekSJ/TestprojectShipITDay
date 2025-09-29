@@ -51,6 +51,7 @@ public class Main {
         //ChatResponse vllmResponse = vllmService.chat(systemMessage, userMessage);
         ChatResponse vllmResponse = vllmService.chat(request);
 
+        System.out.println(vllmResponse);
         String assistantReply = vllmResponse.aiMessage().text();
 
         AssistantMessage assistantMessage = AssistantMessage.builder()
