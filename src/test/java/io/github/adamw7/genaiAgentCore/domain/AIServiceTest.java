@@ -8,29 +8,24 @@ import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
-import dev.langchain4j.data.message.AudioContent;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.List;
 
 public class AIServiceTest {
     private static final String OLLAMA_ENGINE_NAME = "ollama";
     private static final String VLLM_ENGINE_NAME = "vllm";
-    private static final String OLLAMA_DEFAULT_MODEL = "gemma2";
+    private static final String OLLAMA_DEFAULT_MODEL = "phi3:latest";
     private static final String VLLM_DEFAULT_MODEL = "mistral_7b_it";
-    private static final String OLLAMA_URL = "http://20.185.83.16:8080/";
-    private static final String VLLM_URL = "http://9.169.65.166:8080/v1";
-    private static final String OLLAMA_API_KEY = "aie93JaTv1GW1AP4IIUSqeecV22HgpcQ6WlgWNyfx2HflkY5hTw19JDbT90ViKcZaZ6lpjOo3YIGgpkG7Zb8jEKvdM5Ymnq9jPm79osLppCebwJ7WdWTwWq3Rf15NDxm";
-    private static final String VLLM_API_KEY = "dummy";
-
+    private static final String OLLAMA_URL = "http://172.206.193.55:8080/";
+    private static final String VLLM_URL = "http://172.206.193.55:8080/v1";
+    private static final String OLLAMA_API_KEY = "ollamac2e76a076262addf8a6c4fe118ab283a454e53f137a01960d687da724795a5ac";
+    private static final String VLLM_API_KEY = "vllma93a7ac7ce8ba0a22c7e53fa9329b54e8fefc5a9b87f709bc5c26f3209c5984c";
 
     @Test
     public void scenario1() {
@@ -105,7 +100,6 @@ public class AIServiceTest {
                 .messages(List.of(systemMessage, userMessage))
                 .build();
 
-
         ChatResponse ollamaResponseRequest = ollamaService.chat(request);
         System.out.println("Ollama response -> \n" + ollamaResponseRequest.aiMessage().text());
 
@@ -124,12 +118,12 @@ public class AIServiceTest {
                 System.err.println("Could not find pic1.jpg in resources. Make sure the file is in src/main/resources/");
                 return;
             }
-            
+
             // Convert image to base64
             byte[] imageBytes = imageStream.readAllBytes();
             String base64Image = Base64.getEncoder().encodeToString(imageBytes);
             imageStream.close();
-            
+
             // Create multimodal message with image and prompt
             String prompt = "Please describe what you see in this image in detail.";
             ImageContent imageContent = ImageContent.from(base64Image, "image/jpeg");
@@ -138,20 +132,16 @@ public class AIServiceTest {
                 textContent,
                 imageContent
             ));
-            
+
             // Send to Ollama LLaVA model
             AIService ollamaService = AIConnection.provideOllamaService("llava");
             ChatResponse ollamaResponse = ollamaService.chat(userMessage);
             System.out.println("Ollama LLaVA response -> \n" + ollamaResponse.aiMessage().text());
-            
+
         } catch (IOException e) {
             System.err.println("Error loading or processing image: " + e.getMessage());
             e.printStackTrace();
         }
     }
-
-
-
-
 }
 
